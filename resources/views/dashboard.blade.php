@@ -1,4 +1,3 @@
-<!-- resources/views/dashboard.blade.php -->
 @extends('layouts.app')
 
 @section('content')
@@ -57,39 +56,6 @@
                         <div class="row no-gutters align-items-center">
                             <div class="col me-2">
                                 <div class="text-xs fw-bold text-success text-uppercase mb-1">
-                                    Total Produk
-                                </div>
-                                <div class="h5 mb-0 fw-bold text-gray-800">{{ $produkCount }}</div>
-                                <div class="mt-2 mb-0">
-                                    @php
-                                        $produkAktif = \App\Models\Produk::where('status_produk', 'aktif')->count();
-                                        $produkNonAktif = \App\Models\Produk::where(
-                                            'status_produk',
-                                            'nonaktif',
-                                        )->count();
-                                    @endphp
-                                    <span class="badge bg-success">
-                                        <i class="bi bi-check-circle me-1"></i> {{ $produkAktif }} aktif
-                                    </span>
-                                    <span class="badge bg-secondary ms-1">
-                                        {{ $produkNonAktif }} nonaktif
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <i class="bi bi-box-seam text-success" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-start-info border-3 shadow-sm h-100 py-2">
-                    <div class="card-body">
-                        <div class="row no-gutters align-items-center">
-                            <div class="col me-2">
-                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
                                     Absensi Hari Ini
                                 </div>
                                 <div class="h5 mb-0 fw-bold text-gray-800">{{ $absensiToday }}</div>
@@ -117,7 +83,7 @@
                                 </div>
                             </div>
                             <div class="col-auto">
-                                <i class="bi bi-calendar-check text-info" style="font-size: 2.5rem;"></i>
+                                <i class="bi bi-calendar-check text-success" style="font-size: 2.5rem;"></i>
                             </div>
                         </div>
                     </div>
@@ -125,11 +91,11 @@
             </div>
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-start-warning border-3 shadow-sm h-100 py-2">
+                <div class="card border-start-info border-3 shadow-sm h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
                             <div class="col me-2">
-                                <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                <div class="text-xs fw-bold text-info text-uppercase mb-1">
                                     Kehadiran Bulan Ini
                                 </div>
                                 @php
@@ -148,7 +114,37 @@
                                 </div>
                             </div>
                             <div class="col-auto">
-                                <i class="bi bi-graph-up text-warning" style="font-size: 2.5rem;"></i>
+                                <i class="bi bi-graph-up text-info" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-start-warning border-3 shadow-sm h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col me-2">
+                                <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                    Gaji Bulan Ini
+                                </div>
+                                @php
+                                    $totalGajiBulanIni = \App\Models\Absensi::whereMonth('tanggal', now()->month)
+                                        ->whereYear('tanggal', now()->year)
+                                        ->sum('total_gaji');
+                                    $avgGajiPerHari = $absensiToday > 0 ? round($totalGajiBulanIni / now()->day) : 0;
+                                @endphp
+                                <div class="h5 mb-0 fw-bold text-gray-800">Rp
+                                    {{ number_format($totalGajiBulanIni, 0, ',', '.') }}</div>
+                                <div class="mt-2 mb-0">
+                                    <span class="badge bg-warning">
+                                        Rp {{ number_format($avgGajiPerHari, 0, ',', '.') }} / hari
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-cash-stack text-warning" style="font-size: 2.5rem;"></i>
                             </div>
                         </div>
                     </div>
@@ -171,6 +167,78 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Recent Karyawan -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 fw-bold"><i class="bi bi-people me-2"></i>Data Karyawan Terbaru</h6>
+                        <a href="{{ route('karyawan.index') }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-arrow-right me-1"></i> Kelola
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nama</th>
+                                        <th>Jabatan</th>
+                                        <th>Status</th>
+                                        <th>Total Hadir</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $recentKaryawan = \App\Models\Karyawan::orderBy('created_at', 'desc')
+                                            ->limit(5)
+                                            ->get();
+                                    @endphp
+
+                                    @if ($recentKaryawan->count() > 0)
+                                        @foreach ($recentKaryawan as $karyawan)
+                                            <tr>
+                                                <td><code>{{ $karyawan->id_karyawan }}</code></td>
+                                                <td>
+                                                    <div class="fw-semibold">{{ $karyawan->nama_karyawan }}</div>
+                                                    <small class="text-muted">{{ $karyawan->email ?: '-' }}</small>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class="badge bg-{{ $karyawan->jabatan == 'pemilik' ? 'warning' : ($karyawan->jabatan == 'supervisor' ? 'info' : 'secondary') }}">
+                                                        {{ ucfirst($karyawan->jabatan) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class="badge bg-{{ $karyawan->status_karyawan == 'aktif' ? 'success' : 'danger' }}">
+                                                        {{ ucfirst($karyawan->status_karyawan) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-primary">
+                                                        {{ $karyawan->total_hadir }} hari
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @else
+                                        <tr>
+                                            <td colspan="5" class="text-center py-3">
+                                                <i class="bi bi-people text-muted mb-2" style="font-size: 2rem;"></i>
+                                                <p class="text-muted mb-0">Belum ada data karyawan</p>
+                                                <a href="{{ route('karyawan.create') }}"
+                                                    class="btn btn-sm btn-primary mt-2">
+                                                    <i class="bi bi-plus-circle me-1"></i> Tambah Karyawan
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Column: Recent Activity -->
@@ -179,16 +247,16 @@
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
                         <h6 class="m-0 fw-bold"><i class="bi bi-clock-history me-2"></i>Absensi Terbaru</h6>
-                        <a href="{{ route('absensi.index') }}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-arrow-right"></i>
+                        <a href="#" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-plus-circle me-1"></i> Tambah
                         </a>
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
                             @php
-                                // Query tanpa order by created_at
                                 $recentAbsensi = \App\Models\Absensi::with('karyawan')
                                     ->orderBy('tanggal', 'desc')
+                                    ->orderBy('jam_masuk', 'desc')
                                     ->limit(8)
                                     ->get();
                             @endphp
@@ -210,7 +278,7 @@
                                                 <p class="text-muted mb-0 small">
                                                     {{ \Carbon\Carbon::parse($absensi->tanggal)->format('d M Y') }}
                                                     @if ($absensi->jam_masuk)
-                                                        • {{ $absensi->jam_masuk }}
+                                                        • {{ \Carbon\Carbon::parse($absensi->jam_masuk)->format('H:i') }}
                                                     @endif
                                                 </p>
                                             </div>
@@ -227,6 +295,9 @@
                                 <div class="text-center py-4">
                                     <i class="bi bi-calendar-x text-muted mb-3" style="font-size: 3rem;"></i>
                                     <p class="text-muted">Belum ada data absensi</p>
+                                    <a href="#" class="btn btn-sm btn-primary mt-2">
+                                        <i class="bi bi-plus-circle me-1"></i> Tambah Absensi
+                                    </a>
                                 </div>
                             @endif
                         </div>
@@ -236,14 +307,24 @@
                 <!-- Top Performers Card -->
                 <div class="card shadow-sm">
                     <div class="card-header bg-light py-3">
-                        <h6 class="m-0 fw-bold"><i class="bi bi-trophy me-2"></i>Top Performers</h6>
+                        <h6 class="m-0 fw-bold"><i class="bi bi-trophy me-2"></i>Top Performers Bulan Ini</h6>
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
                             @php
-                                // Query berdasarkan total_hadir tanpa created_at
-                                $topPerformers = \App\Models\Karyawan::where('status_karyawan', 'aktif')
-                                    ->orderBy('total_hadir', 'desc')
+                                // Top performers berdasarkan total hadir bulan ini
+                                $topPerformers = \App\Models\Karyawan::select('m_karyawan.*')
+                                    ->selectSub(function ($query) {
+                                        $query
+                                            ->from('m_absensi')
+                                            ->whereColumn('m_absensi.id_karyawan', 'm_karyawan.id_karyawan')
+                                            ->whereMonth('tanggal', now()->month)
+                                            ->whereYear('tanggal', now()->year)
+                                            ->where('status_absensi', 'hadir')
+                                            ->selectRaw('COUNT(*)');
+                                    }, 'hadir_bulan_ini')
+                                    ->where('status_karyawan', 'aktif')
+                                    ->orderByDesc('hadir_bulan_ini')
                                     ->limit(5)
                                     ->get();
                             @endphp
@@ -254,10 +335,23 @@
                                         <div class="d-flex align-items-center">
                                             <div class="flex-shrink-0">
                                                 <div class="avatar-sm">
-                                                    <div
-                                                        class="avatar-title bg-{{ $index < 3 ? 'warning' : 'light' }} text-{{ $index < 3 ? 'dark' : 'muted' }} rounded-circle">
-                                                        {{ $index + 1 }}
-                                                    </div>
+                                                    @if ($index == 0)
+                                                        <div class="avatar-title bg-warning text-dark rounded-circle">
+                                                            <i class="bi bi-trophy-fill"></i>
+                                                        </div>
+                                                    @elseif($index == 1)
+                                                        <div class="avatar-title bg-secondary text-white rounded-circle">
+                                                            <i class="bi bi-2-circle-fill"></i>
+                                                        </div>
+                                                    @elseif($index == 2)
+                                                        <div class="avatar-title bg-danger text-white rounded-circle">
+                                                            <i class="bi bi-3-circle-fill"></i>
+                                                        </div>
+                                                    @else
+                                                        <div class="avatar-title bg-light text-muted rounded-circle">
+                                                            {{ $index + 1 }}
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1 ms-3">
@@ -271,8 +365,8 @@
                                             </div>
                                             <div class="flex-shrink-0">
                                                 <span class="badge bg-success">
-                                                    <i class="bi bi-check-circle me-1"></i> {{ $karyawan->total_hadir }}
-                                                    hari
+                                                    <i class="bi bi-check-circle me-1"></i>
+                                                    {{ $karyawan->hadir_bulan_ini ?? 0 }} hari
                                                 </span>
                                             </div>
                                         </div>
@@ -281,7 +375,7 @@
                             @else
                                 <div class="text-center py-4">
                                     <i class="bi bi-people text-muted mb-3" style="font-size: 3rem;"></i>
-                                    <p class="text-muted">Belum ada data karyawan</p>
+                                    <p class="text-muted">Belum ada data performa</p>
                                 </div>
                             @endif
                         </div>
@@ -290,125 +384,43 @@
             </div>
         </div>
 
-        <!-- Recent Data Tables -->
-        <div class="row">
-            <!-- Recent Karyawan -->
-            <div class="col-lg-6 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 fw-bold"><i class="bi bi-people me-2"></i>Karyawan</h6>
-                        <a href="{{ route('karyawan.index') }}" class="btn btn-sm btn-outline-primary">
-                            Lihat Semua
-                        </a>
+        <!-- Quick Actions -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light py-3">
+                        <h6 class="m-0 fw-bold"><i class="bi bi-lightning me-2"></i>Quick Actions</h6>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nama</th>
-                                        <th>Jabatan</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        // Query karyawan tanpa order by created_at
-                                        $recentKaryawan = \App\Models\Karyawan::limit(6)->get();
-                                    @endphp
-
-                                    @if ($recentKaryawan->count() > 0)
-                                        @foreach ($recentKaryawan as $karyawan)
-                                            <tr>
-                                                <td><code>{{ $karyawan->id_karyawan }}</code></td>
-                                                <td>
-                                                    <div class="fw-semibold">{{ $karyawan->nama_karyawan }}</div>
-                                                    <small class="text-muted">{{ $karyawan->email }}</small>
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        class="badge bg-{{ $karyawan->jabatan == 'pemilik' ? 'warning' : ($karyawan->jabatan == 'supervisor' ? 'info' : 'secondary') }}">
-                                                        {{ ucfirst($karyawan->jabatan) }}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        class="badge bg-{{ $karyawan->status_karyawan == 'aktif' ? 'success' : 'danger' }}">
-                                                        {{ ucfirst($karyawan->status_karyawan) }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @else
-                                        <tr>
-                                            <td colspan="4" class="text-center py-3">
-                                                <i class="bi bi-people text-muted mb-2" style="font-size: 2rem;"></i>
-                                                <p class="text-muted mb-0">Belum ada data karyawan</p>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Products -->
-            <div class="col-lg-6 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 fw-bold"><i class="bi bi-box-seam me-2"></i>Produk</h6>
-                        <a href="{{ route('produk.index') }}" class="btn btn-sm btn-outline-success">
-                            Lihat Semua
-                        </a>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-sm table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nama Produk</th>
-                                        <th>Satuan</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @php
-                                        // Query produk tanpa order by created_at
-                                        $recentProduk = \App\Models\Produk::limit(6)->get();
-                                    @endphp
-
-                                    @if ($recentProduk->count() > 0)
-                                        @foreach ($recentProduk as $produk)
-                                            <tr>
-                                                <td><code>{{ $produk->id_produk }}</code></td>
-                                                <td>
-                                                    <div class="fw-semibold">{{ $produk->nama_produk }}</div>
-                                                </td>
-                                                <td>
-                                                    <span class="badge bg-secondary">{{ $produk->satuan }}</span>
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        class="badge bg-{{ $produk->status_produk == 'aktif' ? 'success' : 'danger' }}">
-                                                        {{ ucfirst($produk->status_produk) }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @else
-                                        <tr>
-                                            <td colspan="4" class="text-center py-3">
-                                                <i class="bi bi-box-seam text-muted mb-2" style="font-size: 2rem;"></i>
-                                                <p class="text-muted mb-0">Belum ada data produk</p>
-                                            </td>
-                                        </tr>
-                                    @endif
-                                </tbody>
-                            </table>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <a href="{{ route('karyawan.create') }}"
+                                    class="btn btn-primary w-100 d-flex flex-column align-items-center py-3">
+                                    <i class="bi bi-person-plus mb-2" style="font-size: 2rem;"></i>
+                                    <span>Tambah Karyawan</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="#"
+                                    class="btn btn-success w-100 d-flex flex-column align-items-center py-3">
+                                    <i class="bi bi-calendar-plus mb-2" style="font-size: 2rem;"></i>
+                                    <span>Tambah Absensi</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="{{ route('karyawan.index') }}"
+                                    class="btn btn-info w-100 d-flex flex-column align-items-center py-3">
+                                    <i class="bi bi-people mb-2" style="font-size: 2rem;"></i>
+                                    <span>Kelola Karyawan</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <a href="#"
+                                    class="btn btn-warning w-100 d-flex flex-column align-items-center py-3">
+                                    <i class="bi bi-cash-stack mb-2" style="font-size: 2rem;"></i>
+                                    <span>Laporan Gaji</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -471,6 +483,21 @@
         .list-group-item:last-child {
             border-bottom: 0;
         }
+
+        .quick-action-btn {
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
     </style>
 @endpush
 
@@ -482,7 +509,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const ctx = document.getElementById('attendanceChart').getContext('2d');
 
-            // Data dummy untuk chart
+            // Data real dari database untuk 7 hari terakhir
             const labels = [];
             const hadirData = [];
             const cutiData = [];
@@ -492,15 +519,31 @@
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
+                const dateString = date.toISOString().split('T')[0];
+
                 labels.push(date.toLocaleDateString('id-ID', {
                     weekday: 'short',
                     day: 'numeric'
                 }));
 
-                // Data dummy
-                hadirData.push(Math.floor(Math.random() * 10) + 5);
-                cutiData.push(Math.floor(Math.random() * 3));
-                tidakHadirData.push(Math.floor(Math.random() * 2));
+                // Fetch data dari database (dummy, sesuaikan dengan kebutuhan)
+                @php
+                    // Data dummy untuk chart - bisa diganti dengan query database
+                    $chartData = [];
+                    for ($i = 6; $i >= 0; $i--) {
+                        $date = now()->subDays($i);
+                        $chartData[$date->format('Y-m-d')] = [
+                            'hadir' => rand(5, 15),
+                            'cuti' => rand(0, 3),
+                            'tidak_hadir' => rand(0, 2),
+                        ];
+                    }
+                @endphp
+
+                // Gunakan data dari PHP
+                hadirData.push({{ $chartData[$dateString]['hadir'] ?? '0' }});
+                cutiData.push({{ $chartData[$dateString]['cuti'] ?? '0' }});
+                tidakHadirData.push({{ $chartData[$dateString]['tidak_hadir'] ?? '0' }});
             }
 
             const attendanceChart = new Chart(ctx, {
@@ -513,21 +556,24 @@
                         borderColor: '#1cc88a',
                         backgroundColor: 'rgba(28, 200, 138, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        borderWidth: 2
                     }, {
                         label: 'Cuti',
                         data: cutiData,
                         borderColor: '#f6c23e',
                         backgroundColor: 'rgba(246, 194, 62, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        borderWidth: 2
                     }, {
                         label: 'Tidak Hadir',
                         data: tidakHadirData,
                         borderColor: '#e74a3b',
                         backgroundColor: 'rgba(231, 74, 59, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        borderWidth: 2
                     }]
                 },
                 options: {
@@ -536,27 +582,50 @@
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true,
+                            }
                         },
                         tooltip: {
                             mode: 'index',
-                            intersect: false
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                drawBorder: false
+                            },
                             ticks: {
                                 stepSize: 2
                             }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index',
                     }
                 }
             });
 
-            // Auto refresh dashboard setiap 60 detik
+            // Auto refresh dashboard setiap 5 menit (300000 ms)
             setTimeout(function() {
                 window.location.reload();
-            }, 60000);
+            }, 300000);
         });
     </script>
 @endpush

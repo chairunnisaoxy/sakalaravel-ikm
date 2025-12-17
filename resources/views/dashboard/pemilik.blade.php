@@ -1,196 +1,187 @@
 <!-- resources/views/dashboard/pemilik.blade.php -->
 @extends('layouts.app')
+
 @section('content')
-    <!-- Include pemilik dashboard content here -->
-@endsection
-<div class="row">
-    <!-- Financial Overview -->
-    <div class="col-md-6">
-        <div class="card border-warning">
-            <div class="card-header bg-warning text-dark">
-                <h6><i class="bi bi-cash-stack"></i> Overview Keuangan</h6>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h3><i class="bi bi-person-fill-gear"></i> Dashboard Pemilik</h3>
+                <p class="text-muted">Overview bisnis dan keuangan</p>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-6">
-                        <h6>Pengeluaran Bulan Ini</h6>
-                        <h3 class="text-danger">Rp {{ number_format($totalPengeluaran, 0, ',', '.') }}</h3>
-                        <small class="text-muted">Gaji + Operasional</small>
-                    </div>
-                    <div class="col-6">
-                        <h6>Estimasi Pendapatan</h6>
-                        <h3 class="text-success">Rp {{ number_format($estimasiPendapatan, 0, ',', '.') }}</h3>
-                        <small class="text-muted">Berdasarkan produksi</small>
+        </div>
+
+        <!-- Stats Keuangan -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="h4 mb-1">Rp {{ number_format($totalPengeluaran ?? 0, 0, ',', '.') }}</div>
+                        <small class="text-muted">Total Pengeluaran</small>
                     </div>
                 </div>
-                <hr>
-                <div class="mt-3">
-                    <h6>Profit Margin</h6>
-                    <div class="progress" style="height: 20px;">
-                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ $profitMargin }}%;">
+            </div>
+
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="h4 mb-1">Rp {{ number_format($estimasiPendapatan ?? 0, 0, ',', '.') }}</div>
+                        <small class="text-muted">Estimasi Pendapatan</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        @php
+                            $profitMargin = $profitMargin ?? 0;
+                        @endphp
+                        <div class="h2 mb-0 {{ $profitMargin >= 0 ? 'text-success' : 'text-danger' }}">
                             {{ $profitMargin }}%
                         </div>
+                        <small class="text-muted">Profit Margin</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6 mb-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <div class="h2 mb-0">{{ $karyawanCount ?? 0 }}</div>
+                        <small class="text-muted">Total Karyawan</small>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Business Health -->
-    <div class="col-md-6">
-        <div class="card border-success">
-            <div class="card-header bg-success text-white">
-                <h6><i class="bi bi-heart-pulse"></i> Kesehatan Bisnis</h6>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-4">
-                        <div class="mb-2">
-                            <i class="bi bi-people text-primary" style="font-size: 2rem;"></i>
-                        </div>
-                        <h5>{{ $productivityRate }}%</h5>
-                        <small>Produktivitas</small>
+        <!-- Ringkasan Bisnis -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0"><i class="bi bi-cash-stack"></i> Keuangan</h6>
                     </div>
-                    <div class="col-4">
-                        <div class="mb-2">
-                            <i class="bi bi-arrow-up-circle text-success" style="font-size: 2rem;"></i>
-                        </div>
-                        <h5>{{ $growthRate }}%</h5>
-                        <small>Pertumbuhan</small>
-                    </div>
-                    <div class="col-4">
-                        <div class="mb-2">
-                            <i class="bi bi-shield-check text-info" style="font-size: 2rem;"></i>
-                        </div>
-                        <h5>{{ $retentionRate }}%</h5>
-                        <small>Retensi Karyawan</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                    <div class="card-body">
+                        <p><strong>Pengeluaran Bulan Ini:</strong> Rp
+                            {{ number_format($totalPengeluaran ?? 0, 0, ',', '.') }}</p>
+                        <p><strong>Biaya Gaji:</strong> Rp {{ number_format($totalPengeluaranGaji ?? 0, 0, ',', '.') }}
+                        </p>
+                        <p><strong>Biaya Operasional:</strong> Rp {{ number_format($biayaOperasional ?? 0, 0, ',', '.') }}
+                        </p>
+                        <p><strong>Estimasi Pendapatan:</strong> Rp
+                            {{ number_format($estimasiPendapatan ?? 0, 0, ',', '.') }}</p>
 
-<!-- Strategic Reports -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header bg-dark text-white">
-                <h6><i class="bi bi-graph-up-arrow"></i> Laporan Strategis</h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="card border-info">
-                            <div class="card-body text-center">
-                                <i class="bi bi-currency-dollar text-info mb-2" style="font-size: 2rem;"></i>
-                                <h5>Analisis Biaya</h5>
-                                <p class="text-muted small">Breakdown pengeluaran per departemen</p>
-                                <a href="#" class="btn btn-sm btn-outline-info">Lihat Detail</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card border-primary">
-                            <div class="card-body text-center">
-                                <i class="bi bi-person-lines-fill text-primary mb-2" style="font-size: 2rem;"></i>
-                                <h5>Analisis SDM</h5>
-                                <p class="text-muted small">Performa dan retensi karyawan</p>
-                                <a href="#" class="btn btn-sm btn-outline-primary">Lihat Detail</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="card border-success">
-                            <div class="card-body text-center">
-                                <i class="bi bi-box-seam text-success mb-2" style="font-size: 2rem;"></i>
-                                <h5>Analisis Produk</h5>
-                                <p class="text-muted small">Produktivitas dan kualitas produk</p>
-                                <a href="#" class="btn btn-sm btn-outline-success">Lihat Detail</a>
+                        <div class="mt-3">
+                            <p class="mb-1"><strong>Profit Margin:</strong> {{ $profitMargin ?? 0 }}%</p>
+                            @php
+                                $progressWidth = min(abs($profitMargin ?? 0), 100);
+                            @endphp
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-{{ ($profitMargin ?? 0) >= 0 ? 'success' : 'danger' }}"
+                                    style="width: {{ $progressWidth }}%; max-width: 100%">
+                                    {{ $profitMargin ?? 0 }}%
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
 
-<!-- Key Performance Indicators -->
-<div class="row mt-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <h6><i class="bi bi-speedometer2"></i> Key Performance Indicators (KPI)</h6>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0"><i class="bi bi-graph-up"></i> Performa</h6>
+                    </div>
+                    <div class="card-body">
+                        @php
+                            $productivityRate = $productivityRate ?? 0;
+                            $growthRate = $growthRate ?? 0;
+                            $retentionRate = $retentionRate ?? 0;
+                        @endphp
+
+                        <p><strong>Produktivitas:</strong> {{ $productivityRate }}%</p>
+                        <div class="progress mb-2" style="height: 15px;">
+                            <div class="progress-bar bg-{{ $productivityRate >= 80 ? 'success' : ($productivityRate >= 60 ? 'warning' : 'danger') }}"
+                                style="width: {{ min($productivityRate, 100) }}%"></div>
+                        </div>
+
+                        <p><strong>Pertumbuhan:</strong> {{ $growthRate }}%</p>
+                        <div class="progress mb-2" style="height: 15px;">
+                            @php
+                                $growthProgress = min(abs($growthRate), 100);
+                            @endphp
+                            <div class="progress-bar bg-{{ $growthRate >= 10 ? 'success' : ($growthRate >= 0 ? 'warning' : 'danger') }}"
+                                style="width: {{ $growthProgress }}%"></div>
+                        </div>
+
+                        <p><strong>Retensi Karyawan:</strong> {{ $retentionRate }}%</p>
+                        <div class="progress mb-2" style="height: 15px;">
+                            <div class="progress-bar bg-{{ $retentionRate >= 90 ? 'success' : ($retentionRate >= 80 ? 'warning' : 'danger') }}"
+                                style="width: {{ min($retentionRate, 100) }}%"></div>
+                        </div>
+
+                        <p><strong>Karyawan Aktif:</strong> {{ $karyawanAktif ?? 0 }} dari {{ $karyawanCount ?? 0 }}</p>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Indikator</th>
-                                <th>Target</th>
-                                <th>Aktual</th>
-                                <th>Pencapaian</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Produktivitas Karyawan</td>
-                                <td>85%</td>
-                                <td>{{ $productivityRate }}%</td>
-                                <td>
-                                    <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar bg-{{ $productivityRate >= 85 ? 'success' : ($productivityRate >= 70 ? 'warning' : 'danger') }}"
-                                            style="width: {{ $productivityRate }}%"></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span
-                                        class="badge bg-{{ $productivityRate >= 85 ? 'success' : ($productivityRate >= 70 ? 'warning' : 'danger') }}">
-                                        {{ $productivityRate >= 85 ? 'Tercapai' : ($productivityRate >= 70 ? 'Perlu Perbaikan' : 'Kritis') }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Retensi Karyawan</td>
-                                <td>90%</td>
-                                <td>{{ $retentionRate }}%</td>
-                                <td>
-                                    <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar bg-{{ $retentionRate >= 90 ? 'success' : ($retentionRate >= 80 ? 'warning' : 'danger') }}"
-                                            style="width: {{ $retentionRate }}%"></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span
-                                        class="badge bg-{{ $retentionRate >= 90 ? 'success' : ($retentionRate >= 80 ? 'warning' : 'danger') }}">
-                                        {{ $retentionRate >= 90 ? 'Baik' : ($retentionRate >= 80 ? 'Cukup' : 'Buruk') }}
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Profit Margin</td>
-                                <td>25%</td>
-                                <td>{{ $profitMargin }}%</td>
-                                <td>
-                                    <div class="progress" style="height: 10px;">
-                                        <div class="progress-bar bg-{{ $profitMargin >= 25 ? 'success' : ($profitMargin >= 15 ? 'warning' : 'danger') }}"
-                                            style="width: {{ $profitMargin }}%"></div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span
-                                        class="badge bg-{{ $profitMargin >= 25 ? 'success' : ($profitMargin >= 15 ? 'warning' : 'danger') }}">
-                                        {{ $profitMargin >= 25 ? 'Optimal' : ($profitMargin >= 15 ? 'Wajar' : 'Rendah') }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="bi bi-people"></i> SDM</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Total Karyawan:</strong> {{ $karyawanCount ?? 0 }}</p>
+                        <p><strong>Aktif:</strong> {{ $karyawanAktif ?? 0 }}</p>
+                        <p><strong>Nonaktif:</strong> {{ ($karyawanCount ?? 0) - ($karyawanAktif ?? 0) }}</p>
+                        <a href="{{ route('karyawan.index') }}" class="btn btn-sm btn-outline-info mt-2">
+                            Lihat Semua Karyawan
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0"><i class="bi bi-calendar-check"></i> Absensi</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Hari Ini:</strong> {{ $absensiToday ?? 0 }}</p>
+                        <p><strong>Bulan Ini:</strong> {{ ($absensiToday ?? 0) * now()->day }}</p>
+                        @php
+                            $attendanceRate =
+                                ($karyawanAktif ?? 0) > 0
+                                    ? round((($absensiToday ?? 0) / ($karyawanAktif ?? 0)) * 100, 1)
+                                    : 0;
+                        @endphp
+                        <p><strong>Rate Kehadiran:</strong> {{ $attendanceRate }}%</p>
+                        <a href="#" class="btn btn-sm btn-outline-primary mt-2">
+                            Lihat Absensi
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0"><i class="bi bi-clipboard-data"></i> Ringkasan</h6>
+                    </div>
+                    <div class="card-body">
+                        <p><i class="bi bi-check-circle text-success"></i> Karyawan:
+                            {{ $karyawanAktif ?? 0 }}/{{ $karyawanCount ?? 0 }}</p>
+                        <p><i class="bi bi-cash-coin {{ ($profitMargin ?? 0) >= 0 ? 'text-success' : 'text-danger' }}"></i>
+                            Profit: {{ $profitMargin ?? 0 }}%</p>
+                        <p><i class="bi bi-graph-up text-info"></i> Pertumbuhan: {{ $growthRate ?? 0 }}%</p>
+                        <p><i class="bi bi-activity text-warning"></i> Produktivitas: {{ $productivityRate ?? 0 }}%</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+@endsection

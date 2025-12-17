@@ -52,22 +52,22 @@
                                                 <i class="bi bi-people"></i> Data Karyawan
                                             </a>
                                         </li>
-                                        <li>
+                                        {{-- <li>
                                             <a class="dropdown-item {{ request()->routeIs('produk.*') ? 'active' : '' }}"
                                                 href="{{ route('produk.index') }}">
                                                 <i class="bi bi-box-seam"></i> Data Produk
                                             </a>
-                                        </li>
+                                        </li> --}}
                                     </ul>
                                 </li>
                             @endif
 
-                            <li class="nav-item">
+                            {{-- <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs('absensi.*') ? 'active' : '' }}"
                                     href="{{ route('absensi.index') }}">
                                     <i class="bi bi-calendar-check"></i> Absensi
                                 </a>
-                            </li>
+                            </li> --}}
                         @endauth
                     </ul>
 
@@ -78,8 +78,7 @@
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-person-circle"></i>
                                     {{ Auth::user()->name }}
-                                    <span
-                                        class="badge bg-{{ auth()->user()->isPemilik() ? 'warning' : 'info' }} text-dark">
+                                    <span class="badge bg-{{ auth()->user()->isPemilik() ? 'warning' : 'info' }} text-dark">
                                         {{ ucfirst(auth()->user()->role) }}
                                     </span>
                                 </a>

@@ -11,7 +11,7 @@ class Karyawan extends Model
 {
     use HasFactory;
 
-    protected $table = 'm_karyawan'; // Nama tabel dari SQL
+    protected $table = 'm_karyawan';
     protected $primaryKey = 'id_karyawan';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -34,27 +34,22 @@ class Karyawan extends Model
         'password'
     ];
 
-    protected $casts = [
-        'gaji_harian' => 'decimal:2'
-    ];
+    // TIDAK GUNAKAN timestamps karena tabel tidak punya created_at/updated_at
+    public $timestamps = false;
 
     protected static function boot()
     {
         parent::boot();
 
-        // Generate ID otomatis saat membuat data baru
         static::creating(function ($karyawan) {
             if (!$karyawan->id_karyawan) {
                 $karyawan->id_karyawan = 'KRY-' . date('Ymd') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
             }
-
-            // Hash password jika diisi
-            if ($karyawan->password && !Hash::needsRehash($karyawan->password)) {
+            if ($karyawan->password) {
                 $karyawan->password = Hash::make($karyawan->password);
             }
         });
 
-        // Hash password saat update jika diisi
         static::updating(function ($karyawan) {
             if ($karyawan->isDirty('password') && $karyawan->password) {
                 $karyawan->password = Hash::make($karyawan->password);
@@ -68,7 +63,7 @@ class Karyawan extends Model
         return $query->where('status_karyawan', 'aktif');
     }
 
-    // Helper methods untuk role
+    // Helper methods
     public function isPemilik()
     {
         return $this->jabatan === 'pemilik';

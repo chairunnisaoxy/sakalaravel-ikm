@@ -1,4 +1,3 @@
-{{-- resources/views/karyawan/index.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
 
@@ -15,6 +14,9 @@
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
+
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
     <style>
         .badge {
@@ -35,6 +37,15 @@
             margin-top: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
+        .btn-action {
+            width: 35px;
+            height: 35px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 
@@ -45,7 +56,7 @@
                 <i class="fas fa-users"></i> Sistem Manajemen Karyawan
             </a>
             <div class="navbar-nav ml-auto">
-                <a class="nav-link text-white" href="#">
+                <a class="nav-link text-white" href="{{ route('dashboard') }}">
                     <i class="fas fa-home"></i> Dashboard
                 </a>
             </div>
@@ -55,7 +66,7 @@
     <div class="container mt-4">
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
+                <i class="fas fa-check-circle"></i> {{ session('success') }}
                 <button type="button" class="close" data-dismiss="alert">
                     <span>&times;</span>
                 </button>
@@ -64,7 +75,7 @@
 
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                {{ session('error') }}
+                <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
                 <button type="button" class="close" data-dismiss="alert">
                     <span>&times;</span>
                 </button>
@@ -83,74 +94,80 @@
                         </a>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover" id="karyawanTable">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nama</th>
-                                        <th>Jabatan</th>
-                                        <th>Email</th>
-                                        <th>No. Telp</th>
-                                        <th>Gaji Harian</th>
-                                        <th>Status</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($karyawans as $karyawan)
+                        @if ($karyawans->count() > 0)
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="karyawanTable">
+                                    <thead class="thead-light">
                                         <tr>
-                                            <td><strong>{{ $karyawan->id_karyawan }}</strong></td>
-                                            <td>{{ $karyawan->nama_karyawan }}</td>
-                                            <td>
-                                                @php
-                                                    $badgeClass =
-                                                        [
-                                                            'pemilik' => 'danger',
-                                                            'supervisor' => 'warning',
-                                                            'operator' => 'info',
-                                                        ][$karyawan->jabatan] ?? 'secondary';
-                                                @endphp
-                                                <span class="badge badge-{{ $badgeClass }}">
-                                                    {{ strtoupper($karyawan->jabatan) }}
-                                                </span>
-                                            </td>
-                                            <td>{{ $karyawan->email ?? '-' }}</td>
-                                            <td>{{ $karyawan->no_telp ?? '-' }}</td>
-                                            <td>Rp {{ number_format($karyawan->gaji_harian, 0, ',', '.') }}</td>
-                                            <td>
-                                                <span
-                                                    class="badge badge-{{ $karyawan->status_karyawan == 'aktif' ? 'success' : 'danger' }}">
-                                                    {{ strtoupper($karyawan->status_karyawan) }}
-                                                </span>
-                                            </td>
-                                            <td class="action-buttons">
-                                                <a href="{{ route('karyawan.show', $karyawan->id_karyawan) }}"
-                                                    class="btn btn-sm btn-info" title="Detail">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                <a href="{{ route('karyawan.edit', $karyawan->id_karyawan) }}"
-                                                    class="btn btn-sm btn-warning" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form action="{{ route('karyawan.destroy', $karyawan->id_karyawan) }}"
-                                                    method="POST" class="d-inline" onsubmit="return confirmDelete()">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger" title="Hapus">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
+                                            <th>ID</th>
+                                            <th>Nama</th>
+                                            <th>Jabatan</th>
+                                            <th>Email</th>
+                                            <th>No. Telp</th>
+                                            <th>Gaji Harian</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="8" class="text-center">Belum ada data karyawan</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($karyawans as $karyawan)
+                                            <tr>
+                                                <td><strong>{{ $karyawan->id_karyawan }}</strong></td>
+                                                <td>{{ $karyawan->nama_karyawan }}</td>
+                                                <td>
+                                                    @php
+                                                        $badgeClass =
+                                                            [
+                                                                'pemilik' => 'danger',
+                                                                'supervisor' => 'warning',
+                                                                'operator' => 'info',
+                                                            ][$karyawan->jabatan] ?? 'secondary';
+                                                    @endphp
+                                                    <span class="badge badge-{{ $badgeClass }}">
+                                                        {{ strtoupper($karyawan->jabatan) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $karyawan->email ?? '-' }}</td>
+                                                <td>{{ $karyawan->no_telp ?? '-' }}</td>
+                                                <td>Rp {{ number_format($karyawan->gaji_harian, 0, ',', '.') }}</td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-{{ $karyawan->status_karyawan == 'aktif' ? 'success' : 'danger' }}">
+                                                        {{ strtoupper($karyawan->status_karyawan) }}
+                                                    </span>
+                                                </td>
+                                                <td class="action-buttons">
+                                                    <a href="{{ route('karyawan.edit', $karyawan->id_karyawan) }}"
+                                                        class="btn btn-warning btn-action" title="Edit">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <form
+                                                        action="{{ route('karyawan.destroy', $karyawan->id_karyawan) }}"
+                                                        method="POST" class="d-inline delete-form"
+                                                        data-nama="{{ $karyawan->nama_karyawan }}">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-danger btn-action"
+                                                            title="Hapus">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center py-5">
+                                <i class="fas fa-users fa-4x text-muted mb-3"></i>
+                                <h4 class="text-muted">Belum ada data karyawan</h4>
+                                <p class="text-muted">Mulai dengan menambahkan karyawan baru</p>
+                                <a href="{{ route('karyawan.create') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Tambah Karyawan Pertama
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -163,21 +180,54 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            // Initialize DataTable
-            $('#karyawanTable').DataTable({
-                "pageLength": 10,
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
-                }
+            // Initialize DataTable jika ada data
+            if ($('#karyawanTable').length) {
+                $('#karyawanTable').DataTable({
+                    "pageLength": 10,
+                    "language": {
+                        "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Indonesian.json"
+                    }
+                });
+            }
+
+            // SweetAlert untuk konfirmasi hapus
+            $('.delete-form').submit(function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const nama = form.data('nama');
+
+                Swal.fire({
+                    title: 'Hapus Karyawan?',
+                    html: `Apakah Anda yakin ingin menghapus karyawan <strong>${nama}</strong>?<br><small>Data yang dihapus tidak dapat dikembalikan.</small>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Menghapus...',
+                            text: 'Mohon tunggu',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Submit form
+                        form.unbind('submit').submit();
+                    }
+                });
             });
         });
-
-        function confirmDelete() {
-            return confirm('Apakah Anda yakin ingin menghapus karyawan ini?');
-        }
     </script>
 </body>
 

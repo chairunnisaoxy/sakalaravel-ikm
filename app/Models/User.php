@@ -2,8 +2,8 @@
 // app/Models/User.php
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -39,5 +39,10 @@ class User extends Authenticatable
     public function isSupervisor()
     {
         return $this->role === 'supervisor';
+    }
+
+    public function isOperator()
+    {
+        return $this->role === 'operator';
     }
 }

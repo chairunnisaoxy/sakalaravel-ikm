@@ -3,101 +3,138 @@
 namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
-use App\Models\Produk;
 use App\Models\Absensi;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        // Cek apakah user sudah login
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
 
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        // Data umum
         $karyawanCount = Karyawan::count();
-        $produkCount = Produk::count();
         $absensiToday = Absensi::whereDate('tanggal', today())->count();
         $karyawanAktif = Karyawan::where('status_karyawan', 'aktif')->count();
 
-        // Data umum untuk semua role
-        $commonData = compact(
-            'karyawanCount',
-            'produkCount',
-            'absensiToday',
-            'karyawanAktif'
-        );
-
         // Data khusus berdasarkan role
-        if ($user->isSupervisor()) {
-            return $this->supervisorDashboard($commonData);
-        } else if ($user->isPemilik()) {
-            return $this->pemilikDashboard($commonData);
+        if ($user->role === 'supervisor') {
+            return $this->supervisorDashboard($karyawanCount, $absensiToday, $karyawanAktif);
+        } else if ($user->role === 'pemilik') {
+            return $this->pemilikDashboard($karyawanCount, $absensiToday, $karyawanAktif);
         }
 
-        // Fallback ke dashboard umum
-        return view('dashboard', $commonData);
+        // Default dashboard (bisa untuk operator atau role lainnya)
+        return view('dashboard', compact('karyawanCount', 'absensiToday', 'karyawanAktif'));
     }
 
-    private function supervisorDashboard($commonData)
+    private function supervisorDashboard($karyawanCount, $absensiToday, $karyawanAktif)
     {
         // Data khusus supervisor
         $hadirToday = Absensi::whereDate('tanggal', today())
             ->where('status_absensi', 'hadir')->count();
 
+        $terlambatToday = Absensi::whereDate('tanggal', today())
+            ->where('jam_masuk', '>', '08:00:00')
+            ->whereNotNull('jam_masuk')
+            ->count();
+
+        // Data operator (TIDAK ORDER BY created_at)
         $operatorPerformance = Karyawan::where('jabatan', 'operator')
             ->where('status_karyawan', 'aktif')
             ->get()
             ->map(function ($karyawan) {
-                $karyawan->total_produksi = rand(300, 600); // Data dummy
+                // Data dummy untuk produksi
+                $karyawan->total_produksi = rand(300, 600);
                 return $karyawan;
             });
 
+        // Cek absensi pagi
         $absensiPagiDone = Absensi::whereDate('tanggal', today())
             ->whereTime('jam_masuk', '<', '09:00:00')
             ->exists();
 
-        $additionalData = [
-            'hadirToday' => $hadirToday,
-            'operatorPerformance' => $operatorPerformance,
-            'absensiPagiDone' => $absensiPagiDone,
-            'terlambatToday' => Absensi::whereDate('tanggal', today())
-                ->whereTime('jam_masuk', '>', '08:00:00')
-                ->count(),
-            'produksiToday' => rand(2000, 5000), // Data dummy
-        ];
+        // Data dummy produksi
+        $produksiToday = rand(2000, 5000);
 
-        return view('dashboard.supervisor', array_merge($commonData, $additionalData));
+        return view('dashboard.supervisor', compact(
+            'karyawanCount',
+            'absensiToday',
+            'karyawanAktif',
+            'hadirToday',
+            'terlambatToday',
+            'operatorPerformance',
+            'absensiPagiDone',
+            'produksiToday'
+        ));
     }
 
-    private function pemilikDashboard($commonData)
+    private function pemilikDashboard($karyawanCount, $absensiToday, $karyawanAktif)
     {
-        // Data khusus pemilik
-        $totalPengeluaran = Absensi::whereMonth('tanggal', now()->month)
+        // Data keuangan pemilik
+        $totalPengeluaranGaji = Absensi::whereMonth('tanggal', now()->month)
             ->whereYear('tanggal', now()->year)
-            ->sum('total_gaji') + (rand(5000000, 15000000)); // Tambah biaya operasional
+            ->sum('total_gaji') ?? 0;
 
-        $estimasiPendapatan = $produkCount * rand(50000, 200000); // Data dummy
+        // Biaya operasional
+        $biayaOperasional = 10000000;
+        $totalPengeluaran = $totalPengeluaranGaji + $biayaOperasional;
 
-        $profitMargin = $estimasiPendapatan > 0
-            ? round(($estimasiPendapatan - $totalPengeluaran) / $estimasiPendapatan * 100, 1)
-            : 0;
+        // Estimasi pendapatan (hindari division by zero)
+        $rataHadirPerHari = $absensiToday > 0 ? $absensiToday / now()->day : 0;
+        $estimasiPendapatan = $rataHadirPerHari * 750000 * now()->day;
 
-        $productivityRate = $karyawanAktif > 0
-            ? round(($commonData['absensiToday'] / ($karyawanAktif * now()->day)) * 100, 1)
-            : 0;
+        // Hitung profit margin dengan cek pembagi nol
+        if ($estimasiPendapatan > 0) {
+            $profitMargin = round(($estimasiPendapatan - $totalPengeluaran) / $estimasiPendapatan * 100, 1);
+        } else {
+            $profitMargin = 0;
+        }
 
-        $growthRate = rand(5, 20); // Data dummy
-        $retentionRate = 100 - (rand(0, 10)); // Data dummy
+        // Productivity rate dengan cek pembagi nol
+        if ($karyawanAktif > 0 && now()->day > 0) {
+            $productivityRate = round(($absensiToday / ($karyawanAktif * now()->day)) * 100, 1);
+        } else {
+            $productivityRate = 0;
+        }
 
-        $additionalData = [
-            'totalPengeluaran' => $totalPengeluaran,
-            'estimasiPendapatan' => $estimasiPendapatan,
-            'profitMargin' => max(0, $profitMargin),
-            'productivityRate' => $productivityRate,
-            'growthRate' => $growthRate,
-            'retentionRate' => $retentionRate,
-        ];
+        // Growth rate (dibandingkan bulan lalu)
+        $absensiBulanLalu = Absensi::whereMonth('tanggal', now()->subMonth()->month)
+            ->whereYear('tanggal', now()->subMonth()->year)
+            ->count();
 
-        return view('dashboard.pemilik', array_merge($commonData, $additionalData));
+        if ($absensiBulanLalu > 0) {
+            $growthRate = round((($absensiToday * now()->day) - $absensiBulanLalu) / $absensiBulanLalu * 100, 1);
+        } else {
+            $growthRate = 100; // Jika bulan lalu 0, growth 100%
+        }
+
+        // Retention rate dengan cek pembagi nol
+        if ($karyawanCount > 0) {
+            $retentionRate = round(($karyawanAktif / $karyawanCount) * 100, 1);
+        } else {
+            $retentionRate = 0;
+        }
+
+        return view('dashboard.pemilik', compact(
+            'karyawanCount',
+            'absensiToday',
+            'karyawanAktif',
+            'totalPengeluaran',
+            'totalPengeluaranGaji',
+            'biayaOperasional',
+            'estimasiPendapatan',
+            'profitMargin',
+            'productivityRate',
+            'growthRate',
+            'retentionRate'
+        ));
     }
 }

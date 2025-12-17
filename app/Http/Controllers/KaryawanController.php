@@ -6,15 +6,42 @@ namespace App\Http\Controllers;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Controller;
 
+/**
+ * @method \Illuminate\Routing\Controller middleware(callable $callback)
+ */
 class KaryawanController extends Controller
 {
+    /**
+     * Constructor untuk middleware authorization
+     */
+    public function __construct()
+    {
+        // Apply middleware ke semua method kecuali yang dikecualikan
+        $this->middleware(function ($request, $next) {
+            if (!Auth::check()) {
+                return redirect()->route('login');
+            }
+
+            $user = Auth::user();
+
+            // Hanya supervisor dan pemilik yang bisa akses
+            if (!in_array($user->role, ['supervisor', 'pemilik'])) {
+                abort(403, 'Unauthorized access. Hanya supervisor dan pemilik yang bisa mengakses halaman ini.');
+            }
+
+            return $next($request);
+        });
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $karyawans = Karyawan::orderBy('created_at', 'desc')->get();
+        // ORDER BY id_karyawan atau nama_karyawan (bukan created_at)
+        $karyawans = Karyawan::orderBy('id_karyawan', 'desc')->get();
         return view('karyawan.index', compact('karyawans'));
     }
 
@@ -56,7 +83,7 @@ class KaryawanController extends Controller
                 'jabatan' => $request->jabatan,
                 'gaji_harian' => $request->gaji_harian,
                 'email' => $request->email,
-                'password' => $request->password, // Akan di-hash otomatis di model
+                'password' => $request->password,
                 'no_telp' => $request->no_telp,
                 'alamat' => $request->alamat,
                 'status_karyawan' => $request->status_karyawan,
