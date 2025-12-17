@@ -10,12 +10,12 @@ class Absensi extends Model
     use HasFactory;
 
     protected $table = 'm_absensi';
-
-    // Note: Tabel ini punya composite primary key, tapi Laravel tidak support composite primary key
-    // Kita akan gunakan id sebagai primary key
     protected $primaryKey = 'id_absensi';
     public $incrementing = false;
     protected $keyType = 'string';
+    
+    // TAMBAHKAN INI: Nonaktifkan timestamps
+    public $timestamps = false;
 
     protected $fillable = [
         'id_absensi',
@@ -37,7 +37,6 @@ class Absensi extends Model
         'tanggal' => 'date',
     ];
 
-    // Relationship dengan karyawan
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'id_karyawan', 'id_karyawan');
