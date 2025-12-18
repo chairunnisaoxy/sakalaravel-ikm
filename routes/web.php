@@ -16,6 +16,16 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard - semua role bisa akses
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // PRODUK ROUTES
+    Route::prefix('produk')->group(function () {
+        Route::get('/', [ProdukController::class, 'index'])->name('produk.index');
+        Route::get('/create', [ProdukController::class, 'create'])->name('produk.create');
+        Route::post('/store', [ProdukController::class, 'store'])->name('produk.store');
+        Route::get('/{produk}/edit', [ProdukController::class, 'edit'])->name('produk.edit');
+        Route::put('/{produk}', [ProdukController::class, 'update'])->name('produk.update');
+        Route::delete('/{produk}', [ProdukController::class, 'destroy'])->name('produk.destroy');
+    });
+
     // KARYAWAN ROUTES - Hanya bisa diakses jika role supervisor atau pemilik
     // TAMBAHKAN AUTHORIZATION DI CONTROLLER
     Route::prefix('karyawan')->group(function () {

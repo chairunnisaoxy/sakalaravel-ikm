@@ -52,12 +52,12 @@
                                                 <i class="bi bi-people"></i> Data Karyawan
                                             </a>
                                         </li>
-                                        {{-- <li>
+                                        =<li>
                                             <a class="dropdown-item {{ request()->routeIs('produk.*') ? 'active' : '' }}"
                                                 href="{{ route('produk.index') }}">
                                                 <i class="bi bi-box-seam"></i> Data Produk
                                             </a>
-                                        </li> --}}
+                                        </li>
                                     </ul>
                                 </li>
                             @endif

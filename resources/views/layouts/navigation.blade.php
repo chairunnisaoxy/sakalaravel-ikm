@@ -17,6 +17,11 @@
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             <i class="bi bi-speedometer2 mr-2"></i> Dashboard
                         </x-nav-link>
+                        
+                        <!-- MENU PRODUK (TAMBAHAN) -->
+                        <x-nav-link :href="route('produk.index')" :active="request()->routeIs('produk.*')">
+                            <i class="bi bi-box mr-2"></i> Produk
+                        </x-nav-link>
 
                         <!-- Menu khusus Supervisor -->
                         @if (auth()->user()->role === 'supervisor')
