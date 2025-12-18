@@ -160,7 +160,8 @@
                                     : 0;
                         @endphp
                         <p><strong>Rate Kehadiran:</strong> {{ $attendanceRate }}%</p>
-                        <a href="#" class="btn btn-sm btn-outline-primary mt-2">
+                        <!-- PERBAIKAN DI SINI: ganti href="#" dengan route('absensi.index') -->
+                        <a href="{{ route('absensi.index') }}" class="btn btn-sm btn-outline-primary mt-2">
                             Lihat Absensi
                         </a>
                     </div>

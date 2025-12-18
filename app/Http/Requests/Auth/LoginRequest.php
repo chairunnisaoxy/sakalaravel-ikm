@@ -54,12 +54,12 @@ class LoginRequest extends FormRequest
         $user = Auth::user();
 
         // Hanya izinkan login untuk role 'pemilik' dan 'supervisor'
-        if (!in_array($user->role, ['pemilik', 'supervisor'])) {
-            Auth::logout();
-            throw ValidationException::withMessages([
-                'email' => 'Anda tidak memiliki akses ke sistem ini.',
-            ]);
-        }
+            if (!in_array($user->role, ['pemilik', 'supervisor'])) {
+                Auth::logout();
+                throw ValidationException::withMessages([
+                    'email' => 'Anda tidak memiliki akses ke sistem ini.',
+                ]);
+            }
 
         RateLimiter::clear($this->throttleKey());
     }
